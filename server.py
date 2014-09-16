@@ -2,6 +2,7 @@
 import sys
 import os
 import time, Cookie
+#from jinja2 import Template
 
 #os.chdir('/www/uwsgi')
 #os.chdir('/usr/share/uwsgi/www')
@@ -16,8 +17,6 @@ def parse_query_string(data):
 		return pair
 
 	return dict(tuple(parse_value(pair) for pair in request_data))
-
-
 
 def create_url(url, file_name = 'index.html'):
 	if url == '':
@@ -41,8 +40,10 @@ def do_GET(environ, environ_values):
 	if environ_values['QUERY_STRING']:
 		data = parse_query_string(environ_values['QUERY_STRING'])
 		response_body = '\n'.join(['<tr><td>{0}</td>\n<td>{1}</td></tr>'.format(key, value) for key, value in data.items()])
-		
+		#response_body = ''
 		with open(url, 'r') as file:
+			#t = Template(file)
+			#response_body = t.render(data_list=[(key, value) for key, value in data.items()])
 			response_body = file.read() % response_body
 	elif url[-17:] == 'cookie/index.html':
 		if environ.get('HTTP_COOKIE'):
