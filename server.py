@@ -2,7 +2,7 @@
 import sys
 import os
 import time, Cookie
-#from jinja2 import Template
+from jinja2 import Template
 
 #os.chdir('/www/uwsgi')
 #os.chdir('/usr/share/uwsgi/www')
@@ -39,12 +39,13 @@ def do_GET(environ, environ_values):
 
 	if environ_values['QUERY_STRING']:
 		data = parse_query_string(environ_values['QUERY_STRING'])
-		response_body = '\n'.join(['<tr><td>{0}</td>\n<td>{1}</td></tr>'.format(key, value) for key, value in data.items()])
-		#response_body = ''
+		#response_body = '\n'.join(['<tr><td>{0}</td>\n<td>{1}</td></tr>'.format(key, value) for key, value in data.items()])
+		
 		with open(url, 'r') as file:
-			#t = Template(file)
-			#response_body = t.render(data_list=[(key, value) for key, value in data.items()])
-			response_body = file.read() % response_body
+			t = Template(file.read().decode('utf-8'))
+			response_body = t.render(data_list=[(key, value) for key, value in data.items()])
+			response_body = response_body.encode('utf-8')
+			#response_body = file.read() % response_body
 	elif url[-17:] == 'cookie/index.html':
 		if environ.get('HTTP_COOKIE'):
 			cookie = Cookie.SimpleCookie(environ['HTTP_COOKIE'])
@@ -81,8 +82,11 @@ def do_POST(environ, environ_values):
 	print('post = ', request_data)
 	
 	with open(url, 'r') as file:
-		response_body = (file.read()).format(name = data['name'], sex = sex_dict[data['sex']], education = education_dict[data['education']],
-						comment = data['comment'].decode('utf-8'), spam = spam_dict[data.get('spam', 'off')])# % response_body
+		t = Template(file.read().decode('utf-8'))
+		response_body = t.render(name = data['name'], sex = sex_dict[data['sex']].decode('utf-8'), education = education_dict[data['education']].decode('utf-8'), comment = data['comment'].decode('utf-8'), spam = spam_dict[data.get('spam', 'off')].decode('utf-8'))
+		response_body = response_body.encode('utf-8')
+		#response_body = (file.read()).format(name = data['name'], sex = sex_dict[data['sex']], education = education_dict[data['education']],
+						#comment = data['comment'].decode('utf-8'), spam = spam_dict[data.get('spam', 'off')])# % response_body
 
 		return response_body
 
@@ -106,3 +110,4 @@ def application(environ, start_response):
 	start_response('200 OK', response_headers)
 
 	return response_body
+
